@@ -165,7 +165,7 @@ done
 
 | 출발 | 도착 | 전환 조건 |
 |------|------|----------|
-| 소크라틱 | 계획 | CLARITY_LOG.md에서 `AMBIGUITY_SCORE < 0.10` |
+| 소크라틱 | 계획 | CLARITY_LOG.md에서 `AMBIGUITY_SCORE < AMBIGUITY_THRESHOLD` (기본 0.10, `.harness-config`에서 설정 가능) |
 | 계획 | 구현 | IMPLEMENTATION_PLAN.md가 항목과 함께 존재 |
 | 구현 | 검증 | 계획에 `status: TODO`나 `status: IN_PROGRESS`가 없음 |
 | 검증 | 완료 | progress.txt에 `HARNESS_COMPLETE` 마커 |
@@ -176,11 +176,11 @@ done
 에이전트가 **5회 연속 git 커밋을 생성하지 못하면**:
 
 1. Sonnet 실행 중 → Opus로 에스컬레이션하여 복구 시도
-2. Opus 실행 중 → 새 컨텍스트로 Opus 재시도
+2. Opus 실행 중 → "RECOVERY MODE" 프리픽스를 프롬프트에 주입하여 에이전트에게 stuck 상태를 알리고 다른 접근법 유도
 3. 재시도 후에도 진행 없음 → 다음 단계로 강제 전환
 4. 다음 단계가 없음 → 체크포인트 저장 후 중단
 
-모든 모델에서 대칭적으로 복구를 시도합니다.
+모든 모델에서 대칭적으로 복구를 시도합니다. 복구 시 에이전트는 git log와 progress.txt를 확인하여 이전 시도와 다른 접근을 합니다.
 
 ### 체크포인트 & 재시작
 
@@ -227,14 +227,17 @@ bash scripts/test-ratio.sh
 
 두 개의 훅이 자동으로 품질을 강제합니다:
 
-**`hooks/backpressure.sh`** — 매 Write/Edit 후 실행:
-- 타입체크 (tsc, mypy, cargo check, go vet)
-- 린트 (eslint, ruff, clippy, golangci-lint)
+**`hooks/backpressure.sh`** — 매 Write/Edit 후 실행 (타임아웃 90초):
+- `.harness-config`에서 커맨드를 읽어 실행
+- 타입체크 + 린트
 - 실패 시 → 에이전트가 자동으로 문제를 수정
+- `.harness-config` 미존재 시 경고 출력 (init.sh 미실행 감지)
 
-**`hooks/pre-commit-gate.sh`** — 매 커밋 전 실행:
+**`hooks/pre-commit-gate.sh`** — 매 커밋 전 실행 (타임아웃 180초):
 - 전체 테스트 스위트 통과 필수
-- 건너뛴 테스트 없어야 함 (it.skip, @pytest.mark.skip)
+- 건너뛴 테스트 차단 (it.skip, @pytest.mark.skip, @Disabled, @Ignore)
+- 소스 코드의 TODO/FIXME/XXX/HACK 마커 차단
+- `.harness-config` 미존재 시 커밋 차단 (init.sh 필수)
 - 실패 시 → 에이전트가 수정 후에만 커밋 가능
 
 ### 모델 라우팅
