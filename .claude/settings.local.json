@@ -1,8 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch",
-      "WebFetch",
       "Bash(*)",
       "Read(*)",
       "Write(*)",
@@ -10,28 +8,29 @@
       "Glob(*)",
       "Grep(*)",
       "Agent(*)",
-      "Bash(chmod:*)",
-      "Bash(bash -n /Users/mango/workspace/harness-for-real/loop.sh 2>&1)",
-      "Bash(bash -n /Users/mango/workspace/harness-for-real/init.sh 2>&1)",
-      "Bash(bash -n /Users/mango/workspace/harness-for-real/scripts/monitor.sh 2>&1)",
-      "Bash(bash -n /Users/mango/workspace/harness-for-real/loop.sh)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(gh repo:*)",
-      "Bash(git:*)"
+      "WebSearch",
+      "WebFetch",
+      "Bash(bash -n /Users/mango/workspace/harness-for-real/init.sh)",
+      "Bash(bash -n /Users/mango/workspace/harness-for-real/scripts/monitor.sh)",
+      "Bash(bash -n /Users/mango/workspace/harness-for-real/scripts/test-ratio.sh)",
+      "Bash(bash -n /Users/mango/workspace/harness-for-real/hooks/backpressure.sh)",
+      "Bash(bash -n /Users/mango/workspace/harness-for-real/hooks/pre-commit-gate.sh)",
+      "Bash(grep -r v1.0.0 /Users/mango/workspace/harness-for-real/PROMPT*.md)",
+      "Bash(grep -n \"500\\\\|100\" /Users/mango/workspace/harness-for-real/PROMPT_*.md)",
+      "Bash(grep:*)"
     ]
   },
   "hooks": {
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
-        "command": "bash hooks/backpressure.sh"
+        "command": "timeout 90 bash hooks/backpressure.sh"
       }
     ],
     "PreToolUse": [
       {
         "matcher": "Bash(git commit*)",
-        "command": "bash hooks/pre-commit-gate.sh"
+        "command": "timeout 180 bash hooks/pre-commit-gate.sh"
       }
     ]
   }

@@ -11,7 +11,7 @@ You are a requirements analyst. Your ONLY job is to eliminate ambiguity from the
 ## Process
 
 ### 1. Orient
-Read all files in `specs/` with up to 100 parallel Sonnet subagents. Each subagent reads one spec file and returns a summary of:
+Read all files in `specs/` with parallel subagents. Each subagent reads one spec file and returns a summary of:
 - What the spec requires
 - What is unclear or ambiguous
 - What depends on other specs
@@ -36,7 +36,7 @@ Resolution: <concrete decision that the build phase should follow>
 ```
 
 ### 4. Cross-Spec Consistency Check
-Use an Opus subagent with ultrathink to:
+Use an Opus subagent with ultrathink for cross-spec analysis:
 - Find contradictions between specs
 - Identify integration points that neither spec owns
 - Find implicit dependencies

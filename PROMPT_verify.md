@@ -19,7 +19,7 @@ Run the complete test suite. Every test must pass. If any fail:
 Run typecheck and lint on the entire codebase. Fix any issues.
 
 ### 4. Multi-Agent Verification
-Launch 3 parallel verification subagents (use Opus for deep reasoning):
+Launch 3 verification subagents (use Opus for deep reasoning):
 
 #### Subagent 1: Validator (Spec Compliance)
 ```
@@ -72,7 +72,7 @@ Timestamp: <ISO timestamp>
 ```bash
 git add -A
 git commit -m "verify: all checks passed, harness complete"
-git tag -a "v1.0.0" -m "Ralphton submission"
+git tag -a "v$(date +%Y%m%d-%H%M)" -m "Ralphton submission"
 ```
 
 **IF** any subagent reports FAIL:

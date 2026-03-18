@@ -62,8 +62,10 @@ while true; do
       BAR_LEN=30
       FILLED=$((PCT * BAR_LEN / 100))
       EMPTY=$((BAR_LEN - FILLED))
-      BAR=$(printf '%0.s#' $(seq 1 $FILLED 2>/dev/null) 2>/dev/null || echo "")
-      SPACE=$(printf '%0.s-' $(seq 1 $EMPTY 2>/dev/null) 2>/dev/null || echo "")
+      BAR=""
+      for ((i=0; i<FILLED; i++)); do BAR="${BAR}#"; done
+      SPACE=""
+      for ((i=0; i<EMPTY; i++)); do SPACE="${SPACE}-"; done
       echo -e "  Progress:    [${GREEN}${BAR}${NC}${SPACE}] ${PCT}%"
     fi
     echo ""
@@ -73,12 +75,30 @@ while true; do
   if [ -f "CLARITY_LOG.md" ]; then
     echo -e "${BOLD}=== Socratic Phase ===${NC}"
     ROUNDS=$(grep -c "^Round:" CLARITY_LOG.md 2>/dev/null || echo "0")
-    SCORE=$(grep -oP 'AMBIGUITY_SCORE:\s*\K[0-9.]+' CLARITY_LOG.md 2>/dev/null | tail -1 || echo "N/A")
+    SCORE=$(grep 'AMBIGUITY_SCORE:' CLARITY_LOG.md 2>/dev/null | tail -1 | sed 's/.*AMBIGUITY_SCORE:[[:space:]]*//' | grep -o '[0-9.]*' | head -1 || echo "N/A")
     COMPLETE=$(grep -c "PHASE_0_COMPLETE" CLARITY_LOG.md 2>/dev/null || echo "0")
 
     echo "  Rounds:      $ROUNDS"
     echo "  Ambiguity:   $SCORE"
     [ "$COMPLETE" -gt 0 ] && echo -e "  Status:      ${GREEN}COMPLETE${NC}" || echo -e "  Status:      ${YELLOW}IN PROGRESS${NC}"
+    echo ""
+  fi
+
+  # ─── Spec Hash Check ──────────────────────────────────
+  if [ -d "specs" ] && [ -f "CLARITY_LOG.md" ]; then
+    echo -e "${BOLD}=== Spec Integrity ===${NC}"
+    CURRENT_HASH=$(find specs/ -type f -exec md5 -q {} \; 2>/dev/null | sort | md5 -q 2>/dev/null || find specs/ -type f -exec md5sum {} \; 2>/dev/null | sort | md5sum 2>/dev/null | cut -d' ' -f1)
+    if [ -f ".harness-logs/specs.hash" ]; then
+      SAVED_HASH=$(cat .harness-logs/specs.hash)
+      if [ "$CURRENT_HASH" = "$SAVED_HASH" ]; then
+        echo -e "  Status: ${GREEN}Unchanged${NC}"
+      else
+        echo -e "  Status: ${RED}SPECS CHANGED since Socratic phase!${NC}"
+        echo -e "  ${YELLOW}CLARITY_LOG.md may be outdated${NC}"
+      fi
+    else
+      echo "  No baseline hash (Socratic phase not completed)"
+    fi
     echo ""
   fi
 
@@ -113,6 +133,6 @@ while true; do
     echo -e "${GREEN}${BOLD}>>> HARNESS COMPLETE <<<${NC}"
   fi
 
-  echo -e "${BOLD}Refreshing every ${REFRESH}s...${NC} (Ctrl+C to stop)"
+  echo -e "${BOLD}Last updated: $(date +%H:%M:%S) | Refreshing every ${REFRESH}s...${NC} (Ctrl+C to stop)"
   sleep "$REFRESH"
 done

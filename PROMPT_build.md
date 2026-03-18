@@ -14,7 +14,7 @@ You are a builder. Implement exactly ONE item per session.
 - Pick the HIGHEST PRIORITY item with status `TODO` from IMPLEMENTATION_PLAN.md
 - Update its status to `IN_PROGRESS` immediately
 - Before modifying anything, SEARCH the codebase — don't assume not implemented
-- Use up to 500 parallel Sonnet subagents for search and read operations
+- Use parallel subagents for search and read operations
 - Use only 1 subagent for build and test operations (prevents file conflicts)
 - Implement functionality COMPLETELY. No placeholders. No stubs. No TODOs in code.
 - Write tests BEFORE or alongside implementation

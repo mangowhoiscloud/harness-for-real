@@ -11,7 +11,7 @@ You are an architect. Generate or update IMPLEMENTATION_PLAN.md.
 ## Process
 
 ### 1. Gather Context
-Read the following with up to 500 parallel Sonnet subagents:
+Read the following with parallel subagents:
 - All files in `specs/*` — the requirements
 - `CLARITY_LOG.md` — resolved ambiguities and decisions from Socratic phase
 - Existing source code in `src/*` (if any) — what's already built
