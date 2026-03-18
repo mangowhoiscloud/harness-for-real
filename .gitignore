@@ -1,0 +1,9 @@
+.harness-logs/
+*.bak
+.DS_Store
+node_modules/
+__pycache__/
+.venv/
+target/
+dist/
+build/
