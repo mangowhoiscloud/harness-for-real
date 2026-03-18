@@ -197,11 +197,20 @@ recover_from_stuck() {
   fi
 
   STUCK_COUNT=0
-  cat "PROMPT_${PHASE}.md" | claude -p \
+
+  # Prepend recovery context to give the agent awareness of the stuck state
+  RECOVERY_LOG="$LOG_DIR/recovery_$(date +%Y%m%d_%H%M%S).log"
+  {
+    echo "RECOVERY MODE: The harness detected $MAX_STUCK consecutive iterations with no git commits in phase '$PHASE'."
+    echo "Try a DIFFERENT approach than previous iterations. Check git log and progress.txt for what was already attempted."
+    echo "If blocked, document the blocker in progress.txt and exit."
+    echo "---"
+    cat "PROMPT_${PHASE}.md"
+  } | claude -p \
     $PERMISSION_MODE \
     --output-format "$OUTPUT_FORMAT" \
     --model "$recovery_model" \
-    --verbose 2>&1 | tee -a "$LOG_DIR/recovery_$(date +%Y%m%d_%H%M%S).log"
+    --verbose 2>&1 | tee -a "$RECOVERY_LOG"
 
   local new_commit
   new_commit=$(git rev-parse HEAD 2>/dev/null || echo "none")

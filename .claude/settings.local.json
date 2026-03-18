@@ -17,7 +17,8 @@
       "Bash(bash -n /Users/mango/workspace/harness-for-real/hooks/pre-commit-gate.sh)",
       "Bash(grep -r v1.0.0 /Users/mango/workspace/harness-for-real/PROMPT*.md)",
       "Bash(grep -n \"500\\\\|100\" /Users/mango/workspace/harness-for-real/PROMPT_*.md)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(xargs ls:*)"
     ]
   },
   "hooks": {

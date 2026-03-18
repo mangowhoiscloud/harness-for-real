@@ -192,8 +192,9 @@ CLAUDE_EOF
   echo "[init] Updated CLAUDE.md"
 fi
 
-# ─── Update AGENTS.md ────────────────────────────────────────────
-if [ -f "AGENTS.md" ]; then
+# ─── Update AGENTS.md (only if no agent-added content exists) ─────
+if [ -f "AGENTS.md" ] && grep -q "Updated by agents" AGENTS.md 2>/dev/null; then
+  # AGENTS.md has not been modified by agents yet — safe to overwrite
   cat > AGENTS.md << AGENTS_EOF
 # Operational Guide
 

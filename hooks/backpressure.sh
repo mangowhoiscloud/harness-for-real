@@ -4,11 +4,15 @@
 
 cd "${CLAUDE_PROJECT_DIR:-.}"
 
-# Load config
+# Load config (required — run init.sh first)
 CONFIG=".harness-config"
 if [ -f "$CONFIG" ]; then
   # shellcheck disable=SC1090
   source "$CONFIG"
+else
+  echo "[backpressure] WARNING: .harness-config not found. Run init.sh first." >&2
+  echo "[backpressure] Skipping checks — no backpressure active." >&2
+  exit 0
 fi
 
 ERRORS=""

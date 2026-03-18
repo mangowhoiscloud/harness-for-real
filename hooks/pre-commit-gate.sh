@@ -4,11 +4,14 @@
 
 cd "${CLAUDE_PROJECT_DIR:-.}"
 
-# Load config
+# Load config (required — run init.sh first)
 CONFIG=".harness-config"
 if [ -f "$CONFIG" ]; then
   # shellcheck disable=SC1090
   source "$CONFIG"
+else
+  echo "[gate] ERROR: .harness-config not found. Run init.sh first." >&2
+  exit 2
 fi
 
 echo "[gate] Running pre-commit checks..."
