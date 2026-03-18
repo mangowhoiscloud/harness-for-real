@@ -175,11 +175,53 @@ done
 
 에이전트가 **5회 연속 git 커밋을 생성하지 못하면**:
 
-1. Sonnet 실행 중이면 → 한 번의 복구 시도를 위해 Opus로 에스컬레이션
-2. 이미 Opus면 → 다음 단계로 강제 전환
-3. 다음 단계가 없으면 → 중단 후 보고
+1. Sonnet 실행 중 → Opus로 에스컬레이션하여 복구 시도
+2. Opus 실행 중 → 새 컨텍스트로 Opus 재시도
+3. 재시도 후에도 진행 없음 → 다음 단계로 강제 전환
+4. 다음 단계가 없음 → 체크포인트 저장 후 중단
 
-막힌 루프에 API 크레딧을 낭비하는 것을 방지합니다.
+모든 모델에서 대칭적으로 복구를 시도합니다.
+
+### 체크포인트 & 재시작
+
+loop.sh가 크래시하거나 중단되면, **자동으로 마지막 상태에서 재시작**합니다:
+
+```bash
+# 크래시 후 재시작 (자동으로 마지막 phase/iteration에서 이어서 진행)
+bash loop.sh
+
+# 강제로 처음부터 시작
+bash loop.sh socratic --fresh
+```
+
+상태는 `.harness-logs/harness-state.json`에 매 반복 저장됩니다.
+
+### 예산 강제
+
+```bash
+# $30 예산 설정 — 초과 시 자동 중단
+MAX_BUDGET_USD=30 bash loop.sh
+```
+
+- 80% 도달 시 경고 출력
+- 100% 도달 시 체크포인트 저장 후 자동 중단
+- 비용은 `.harness-config`의 토큰당 가격으로 계산
+
+### 스펙 변경 감지
+
+`init.sh`가 `specs/` 파일의 해시를 저장하고, `monitor.sh`가 실시간으로 변경을 감지합니다. 소크라틱 단계 이후에 스펙이 수정되면 경고를 표시합니다.
+
+### 테스트 코드 비율 측정
+
+```bash
+bash scripts/test-ratio.sh
+# === Test Code Ratio ===
+#   Source lines: 1200
+#   Test lines:   2800
+#   Total:        4000
+#   Ratio:        70% (target: 70%)
+#   Status:       PASS
+```
 
 ### 백프레셔 (Back Pressure)
 
@@ -212,8 +254,8 @@ done
 
 ```
 harness-for-real/
-├── loop.sh                 # 메인 오케스트레이터 — 4-Phase FSM
-├── init.sh                 # 환경 부트스트랩 (프로젝트 타입 자동 감지)
+├── loop.sh                 # 메인 오케스트레이터 — 4-Phase FSM + 체크포인트 + 예산 강제
+├── init.sh                 # 환경 부트스트랩 → .harness-config 생성
 ├── CLAUDE.md               # 프로젝트 규칙 (매 Claude 세션마다 자동 로드)
 ├── AGENTS.md               # 운영 가이드 (60줄 미만)
 │
@@ -223,24 +265,29 @@ harness-for-real/
 ├── PROMPT_verify.md        # Phase 3: 3-에이전트 최종 검증
 │
 ├── hooks/
-│   ├── backpressure.sh     # Post-tool: 타입체크 + 린트
-│   └── pre-commit-gate.sh  # Pre-commit: 테스트 스위트 게이트
+│   ├── backpressure.sh     # Post-tool: 타입체크 + 린트 (.harness-config에서 커맨드 읽기)
+│   └── pre-commit-gate.sh  # Pre-commit: 테스트 + skip 마커 + TODO 검사
 │
 ├── scripts/
-│   └── monitor.sh          # 실시간 진행 대시보드
+│   ├── monitor.sh          # 실시간 진행 대시보드 + 스펙 변경 감지
+│   └── test-ratio.sh       # 테스트 코드 비율 측정 (70% 목표 검증)
 │
 ├── specs/                  # 스펙 파일을 여기에 작성
 │   └── .gitkeep
 │
 ├── examples/
 │   ├── word-counter/       # 데모: Python CLI 단어 빈도 분석기
-│   │   ├── specs/
-│   │   └── run-demo.sh
 │   └── reode-migration-target/  # 데모: Java 레거시 마이그레이션 대상
-│       ├── specs/
-│       └── run-demo.sh
 │
+├── docs/blog/              # 하네스 엔지니어링 관련 블로그 포스트
 └── RESEARCH.md             # 설계 근거가 되는 전체 리서치
+```
+
+### init.sh가 생성하는 파일
+
+```
+.harness-config             # 단일 설정 파일 (빌드/테스트/린트 커맨드, 모델, 가격 등)
+                            # → hooks와 loop.sh가 이 파일을 source하여 사용
 ```
 
 ### 하네스 실행 중 생성되는 파일
@@ -250,13 +297,45 @@ CLARITY_LOG.md              # 소크라틱 Q&A 라운드 + 모호성 점수
 IMPLEMENTATION_PLAN.md      # 상태가 포함된 우선순위 작업 목록
 progress.txt                # 세션별 진행 로그
 .harness-logs/              # 반복별 로그, 비용 추적
+  ├── harness-state.json    # 체크포인트 (크래시 후 자동 재시작용)
+  ├── cost.log              # 반복별 토큰/비용 기록
+  ├── phase.log             # 단계 전환 이벤트 기록
+  └── specs.hash            # 스펙 파일 해시 (변경 감지용)
 ```
 
 ---
 
 ## 설정
 
-모든 설정은 환경변수로 제어합니다:
+`init.sh`를 실행하면 `.harness-config` 파일이 생성됩니다. 이 파일이 모든 설정의 **단일 진실 소스(Single Source of Truth)** 입니다:
+
+```bash
+# .harness-config (init.sh가 자동 생성, 수동 편집 가능)
+PROJECT_TYPE="python-uv"
+PKG_MGR="uv"
+BUILD_CMD="uv build"
+TEST_CMD="uv run pytest"
+LINT_CMD="uv run ruff check ."
+TYPECHECK_CMD="uv run mypy . 2>/dev/null || true"
+SRC_DIRS="src/ lib/"
+TEST_DIRS="tests/ test/"
+
+# 모델 (환경변수로 오버라이드 가능)
+OPUS_MODEL="${OPUS_MODEL:-opus}"
+SONNET_MODEL="${SONNET_MODEL:-sonnet}"
+
+# 가격 (모델 업데이트 시 수정)
+OPUS_INPUT_PRICE=0.000015
+OPUS_OUTPUT_PRICE=0.000075
+SONNET_INPUT_PRICE=0.000003
+SONNET_OUTPUT_PRICE=0.000015
+
+# 임계값
+AMBIGUITY_THRESHOLD=0.10
+TEST_CODE_RATIO_TARGET=0.70
+```
+
+환경변수로 오버라이드할 수 있습니다:
 
 ```bash
 # 단계별 반복 제한
@@ -266,17 +345,13 @@ MAX_BUILD=999       # 기본값: 999 (무제한, 회로 차단기로 보호)
 MAX_VERIFY=20       # 기본값: 20
 
 # 회로 차단기
-MAX_STUCK=5         # 진행 없는 연속 반복 횟수 임계값
+MAX_STUCK=5         # 5회 연속 미진행 → Opus 에스컬레이션 → 강제 전환
 
-# 모델 지정
-OPUS_MODEL=opus     # 또는 특정 모델 ID
-SONNET_MODEL=sonnet
+# 예산 제한
+MAX_BUDGET_USD=50   # 0 = 무제한, 초과 시 자동 중단, 80%에서 경고
 
 # 권한 모드
 PERMISSION_MODE="--dangerously-skip-permissions"  # 헤드리스 자율 모드
-
-# 출력 형식
-OUTPUT_FORMAT=stream-json  # 비용 추적용; 간단한 출력은 "text"
 ```
 
 ### 특정 단계부터 시작
