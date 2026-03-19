@@ -218,6 +218,24 @@ cd examples/word-counter
 bash run-demo.sh
 ```
 
+**데모 실행 결과** (2026-03-19 검증 완료):
+
+| 페이즈 | 결과 | 비고 |
+|--------|------|------|
+| Socratic | 19라운드, 모호성 0.05 | 모순 1건, 엣지케이스 8건, 통합 갭 3건 해결 |
+| Plan | 5개 항목 (P0×4, P1×1) | tokenizer→counter→formatter→CLI→integration 순 |
+| Build | 대기 중 | Plan 완료 상태에서 `bash loop.sh build`로 이어서 실행 |
+| Verify | — | Build 완료 후 자동 진입 |
+
+생성된 계획의 의존 그래프:
+```
+Tokenizer ──┐
+             ├──→ CLI ──→ Integration Tests
+Counter ─────┤
+             │
+Formatter ───┘
+```
+
 ### REODE 마이그레이션 대상 (Java)
 
 Java 1.8 + Spring Framework 4.3.4 레거시 코드베이스를 자율 생성하는 데모. 순환참조, XML 설정, 필드 인젝션 등 의도적인 안티패턴이 포함되어 마이그레이션 도구의 테스트 대상으로 활용 가능:
