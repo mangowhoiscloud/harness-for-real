@@ -21,6 +21,7 @@ If specs reference external libraries or APIs, run `chub search "<library>"` to 
 
 ### 2. Read Previous Progress
 If CLARITY_LOG.md exists, read it to understand what has already been clarified. Do not re-ask resolved questions.
+If CONVERGENCE_DATA sections exist, note the latest score and stagnation_count.
 
 ### 3. Socratic Q&A Loop
 For each ambiguity found, conduct a self-dialogue:
@@ -29,6 +30,7 @@ For each ambiguity found, conduct a self-dialogue:
 Round: <N>
 Spec: <filename>
 Category: UNDEFINED_TERM | CONTRADICTION | MISSING_ERROR_HANDLING | MISSING_PERFORMANCE_CONSTRAINT | AMBIGUOUS_ACCEPTANCE_CRITERIA | INTEGRATION_GAP | UNSTATED_ASSUMPTION | EDGE_CASE
+Severity: CRITICAL | MAJOR | MINOR
 Q: <precise question about the ambiguity>
 A: <your best reasonable interpretation, citing evidence from specs>
 Confidence: <0.0-1.0>
@@ -56,18 +58,44 @@ Ambiguities_Remaining: <N>
 
 Formula: `AMBIGUITY_SCORE = Ambiguities_Remaining / (Ambiguities_Found + 1)`
 
+### 5.5 Convergence Tracking
+After computing AMBIGUITY_SCORE, output convergence data for the harness to detect diminishing returns:
+
+```
+CONVERGENCE_DATA:
+  round: <N>
+  score: <current AMBIGUITY_SCORE>
+  prev_score: <previous round's score, or 1.0 if first round>
+  delta: <score change from previous round, negative means improvement>
+  category_distribution:
+    CRITICAL: <count of unresolved CRITICAL severity items>
+    MAJOR: <count of unresolved MAJOR severity items>
+    MINOR: <count of unresolved MINOR severity items>
+  stagnation_count: <consecutive rounds where |delta| < 0.01>
+```
+
+If stagnation_count >= 3 (three consecutive rounds with negligible improvement), add:
+```
+CONVERGENCE_DETECTED: true
+```
+
 ### 6. Persist
 ```bash
 git add CLARITY_LOG.md
-git commit -m "socratic: round <N>, ambiguity=<score>"
+git commit -m "socratic: round <N>, ambiguity=<score>, delta=<delta>"
 ```
 
 ## Exit Condition
-When AMBIGUITY_SCORE < 0.10 (i.e., 90%+ ambiguities resolved), write this at the end of CLARITY_LOG.md:
+The harness will transition to Phase 1 when ANY of these conditions is met:
+1. `AMBIGUITY_SCORE < 0.10` (standard gate: 90%+ ambiguities resolved)
+2. `CONVERGENCE_DETECTED: true` AND `AMBIGUITY_SCORE < 0.15` AND `CRITICAL: 0` (convergence gate: diminishing returns with no critical issues)
+
+When the exit condition is met, write this at the end of CLARITY_LOG.md:
 ```
 PHASE_0_COMPLETE
 FINAL_AMBIGUITY_SCORE: <score>
 TOTAL_ROUNDS: <N>
+EXIT_REASON: THRESHOLD | CONVERGENCE
 ```
 
 ## Important
@@ -75,3 +103,4 @@ TOTAL_ROUNDS: <N>
 - If you discover a spec is fundamentally incomplete (missing critical info that cannot be reasonably inferred), document it clearly with tag: SPEC_GAP_CRITICAL
 - Prefer specific, actionable resolutions over vague ones.
 - The build phase will treat your Resolutions as authoritative decisions.
+- Focus effort on CRITICAL and MAJOR items. MINOR items can be resolved with reasonable defaults.

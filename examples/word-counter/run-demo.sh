@@ -40,6 +40,9 @@ cp "$HARNESS_DIR/init.sh" .
 cp -r "$HARNESS_DIR/hooks" .
 mkdir -p scripts
 cp "$HARNESS_DIR/scripts/monitor.sh" scripts/
+cp "$HARNESS_DIR/scripts/plan-parser.sh" scripts/
+cp "$HARNESS_DIR/scripts/parallel-build.sh" scripts/
+cp "$HARNESS_DIR/scripts/test-ratio.sh" scripts/
 
 # Create pyproject.toml for Python project
 if [ ! -f "pyproject.toml" ]; then

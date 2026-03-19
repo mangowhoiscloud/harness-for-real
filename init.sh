@@ -28,6 +28,7 @@ PKG_MGR=""
 SRC_DIRS="src/ lib/"
 TEST_DIRS="tests/ test/ __tests__/ spec/"
 DETECTED_FILES=""
+CHUB_AVAILABLE="false"
 
 # Check for multiple project files (warn on ambiguity)
 for f in package.json pyproject.toml requirements.txt setup.py Cargo.toml go.mod pom.xml build.gradle build.gradle.kts; do
