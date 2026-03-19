@@ -52,12 +52,18 @@ Check:
     that the implementation uses current API signatures (not deprecated/hallucinated ones)
 ```
 
-### 5. Aggregate Results
+### 5. Review LEARNINGS.md
+Read LEARNINGS.md and verify that all runtime learnings were properly applied:
+- Check if any learning contradicts the final implementation
+- Verify API annotations match actual usage
+- Compile a final "Architecture Decisions" summary for AGENTS.md
+
+### 6. Aggregate Results
 Collect reports from all 3 subagents. For each FAIL:
-- Create a new item in IMPLEMENTATION_PLAN.md with status: TODO, priority: P0
+- Create a new item in IMPLEMENTATION_PLAN.md with status: TODO, priority: P0, complexity: S or M
 - The harness will loop back to Phase 2 to fix these
 
-### 6. Decision Gate
+### 7. Decision Gate
 **IF** all 3 subagents report ALL PASS:
 ```
 Append to progress.txt:
@@ -67,6 +73,7 @@ Verification Report:
   Validator: ALL PASS (<N> criteria checked)
   Coordinator: ALL PASS (<N> modules checked)
   Packer: ALL PASS (<N> checks)
+  Learnings_Applied: <N> of <M>
 Timestamp: <ISO timestamp>
 ---
 ```
