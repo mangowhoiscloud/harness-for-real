@@ -173,8 +173,8 @@ bash scripts/monitor.sh
 
 **백프레셔**: 두 개의 훅이 `.harness-config`에서 커맨드를 읽어 자동 실행합니다:
 
-- **`backpressure.sh`** (Write/Edit마다, 90초 타임아웃) — 타입체크 + 린트. 실패 시 에이전트가 즉시 수정.
-- **`pre-commit-gate.sh`** (커밋마다, 180초 타임아웃) — 테스트 스위트 + skip 마커 차단(it.skip, @pytest.mark.skip, @Disabled) + 소스 코드 TODO/FIXME 차단. 실패 시 커밋 불가.
+- **`backpressure.sh`** (Write/Edit마다, 60초 타임아웃) — 타입체크 + 린트. 실패 시 에이전트가 즉시 수정.
+- **`pre-commit-gate.sh`** (커밋마다, 120초 타임아웃) — 테스트 스위트 + skip 마커 차단(it.skip, @pytest.mark.skip, @Disabled) + 소스 코드 TODO/FIXME 차단. 실패 시 커밋 불가.
 
 `.harness-config`가 없으면 pre-commit-gate가 커밋을 차단하여, init.sh 미실행 상태에서 백프레셔 없이 코드가 커밋되는 것을 방지합니다.
 
@@ -189,6 +189,21 @@ bash scripts/monitor.sh
 **체크포인트**: 매 반복마다 `.harness-logs/harness-state.json`에 상태를 저장합니다. 크래시 후 `bash loop.sh`로 마지막 지점부터 재시작되고, `bash loop.sh socratic --fresh`로 처음부터 시작할 수 있습니다.
 
 **스펙 변경 감지**: `init.sh`가 `specs/` 해시를 저장하고, `monitor.sh`가 실시간으로 변경을 감지합니다. 소크라틱 완료 후 스펙이 수정되면 CLARITY_LOG.md 무효화 경고를 표시합니다.
+
+### 외부 문서 통합 (Context Hub)
+
+[context-hub](https://github.com/andrewyng/context-hub) (`chub`)를 통해 에이전트가 외부 API/SDK의 최신 문서를 실시간으로 조회합니다. LLM 지식 컷오프로 인한 API 할루시네이션을 방지합니다.
+
+- `init.sh`가 chub 설치 여부를 감지하고, 프로젝트 타입에 맞는 문서 인덱스를 `.context/`에 프리페치
+- 각 페이즈 프롬프트에 chub 조회 스텝이 내장되어, 에이전트가 외부 라이브러리 사용 시 자동으로 최신 문서를 참조
+- 설치: `npm install -g @aisuite/chub` (없으면 `npx`로 폴백)
+
+```bash
+# 에이전트가 사용하는 패턴
+chub search "stripe"              # 문서 검색
+chub get stripe/api --lang py     # 문서 가져오기
+chub annotate stripe/api "note"   # 학습 내용 기록 (세션 간 유지)
+```
 
 ---
 

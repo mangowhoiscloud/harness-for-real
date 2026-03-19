@@ -38,9 +38,9 @@ if [ "$TOTAL" -eq 0 ]; then
   exit 0
 fi
 
-RATIO=$(awk "BEGIN {printf \"%.2f\", $TEST_LINES / $TOTAL}" 2>/dev/null || echo "0")
-PCT=$(awk "BEGIN {printf \"%.0f\", $RATIO * 100}" 2>/dev/null || echo "0")
-TARGET_PCT=$(awk "BEGIN {printf \"%.0f\", $TARGET * 100}" 2>/dev/null || echo "70")
+RATIO=$(awk -v tl="$TEST_LINES" -v tot="$TOTAL" 'BEGIN {printf "%.2f", tl / tot}' 2>/dev/null || echo "0")
+PCT=$(awk -v r="$RATIO" 'BEGIN {printf "%.0f", r * 100}' 2>/dev/null || echo "0")
+TARGET_PCT=$(awk -v t="$TARGET" 'BEGIN {printf "%.0f", t * 100}' 2>/dev/null || echo "70")
 
 echo "=== Test Code Ratio ==="
 echo "  Source lines: $SRC_LINES"
@@ -48,7 +48,7 @@ echo "  Test lines:   $TEST_LINES"
 echo "  Total:        $TOTAL"
 echo "  Ratio:        ${PCT}% (target: ${TARGET_PCT}%)"
 
-if awk "BEGIN {exit ($RATIO >= $TARGET) ? 0 : 1}" 2>/dev/null; then
+if awk -v r="$RATIO" -v t="$TARGET" 'BEGIN {exit (r >= t) ? 0 : 1}' 2>/dev/null; then
   echo "  Status:       PASS"
   exit 0
 else

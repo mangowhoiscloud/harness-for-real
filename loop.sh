@@ -134,7 +134,7 @@ should_transition() {
         local score
         score=$(grep 'AMBIGUITY_SCORE:' CLARITY_LOG.md 2>/dev/null | tail -1 | sed 's/.*AMBIGUITY_SCORE:[[:space:]]*//' | grep -o '[0-9]*\.[0-9]*' | head -1)
         if [ -n "$score" ]; then
-          echo "$score" | awk -v t="$AMBIGUITY_THRESHOLD" '{exit ($1 < t) ? 0 : 1}' && return 0
+          awk -v s="$score" -v t="$AMBIGUITY_THRESHOLD" 'BEGIN {exit (s < t) ? 0 : 1}' && return 0
         fi
       fi
       return 1
@@ -210,7 +210,7 @@ recover_from_stuck() {
     $PERMISSION_MODE \
     --output-format "$OUTPUT_FORMAT" \
     --model "$recovery_model" \
-    --verbose 2>&1 | tee -a "$RECOVERY_LOG"
+    --verbose 2>&1 | tee -a "$RECOVERY_LOG" || true
 
   local new_commit
   new_commit=$(git rev-parse HEAD 2>/dev/null || echo "none")
@@ -258,8 +258,10 @@ track_cost() {
     price_out="$SONNET_OUTPUT_PRICE"
   fi
 
-  iter_cost=$(awk "BEGIN {printf \"%.4f\", $input_tokens * $price_in + $output_tokens * $price_out}" 2>/dev/null || echo "0")
-  ESTIMATED_COST=$(awk "BEGIN {printf \"%.4f\", $ESTIMATED_COST + $iter_cost}" 2>/dev/null || echo "0")
+  iter_cost=$(awk -v it="$input_tokens" -v pi="$price_in" -v ot="$output_tokens" -v po="$price_out" \
+    'BEGIN {printf "%.4f", it * pi + ot * po}' 2>/dev/null || echo "0")
+  ESTIMATED_COST=$(awk -v ec="$ESTIMATED_COST" -v ic="$iter_cost" \
+    'BEGIN {printf "%.4f", ec + ic}' 2>/dev/null || echo "0")
 
   echo "$(date -Iseconds) phase=$PHASE iter=$ITERATION model=$model in=$input_tokens out=$output_tokens cost=\$$iter_cost cumulative=\$$ESTIMATED_COST" >> "$COST_LOG"
 }
@@ -267,16 +269,19 @@ track_cost() {
 # ─── Budget enforcement ──────────────────────────────────────────
 check_budget() {
   if [ "$BUDGET_USD" = "0" ]; then return 0; fi
-  local over
-  over=$(awk "BEGIN {exit ($ESTIMATED_COST >= $BUDGET_USD) ? 0 : 1}" 2>/dev/null) && {
+
+  # Check if budget exceeded
+  if awk -v ec="$ESTIMATED_COST" -v bu="$BUDGET_USD" 'BEGIN {exit (ec >= bu) ? 0 : 1}' 2>/dev/null; then
     echo -e "${RED}[BUDGET] Exceeded \$${BUDGET_USD} budget (spent: \$${ESTIMATED_COST}). Stopping.${NC}"
     log_phase "BUDGET_EXCEEDED" "budget=$BUDGET_USD spent=$ESTIMATED_COST"
     return 1
-  }
+  fi
+
   # Warn at 80%
-  awk "BEGIN {exit ($ESTIMATED_COST >= $BUDGET_USD * 0.8) ? 0 : 1}" 2>/dev/null && {
+  if awk -v ec="$ESTIMATED_COST" -v bu="$BUDGET_USD" 'BEGIN {exit (ec >= bu * 0.8) ? 0 : 1}' 2>/dev/null; then
     echo -e "${YELLOW}[BUDGET] Warning: \$${ESTIMATED_COST} / \$${BUDGET_USD} (80%+ used)${NC}"
-  }
+  fi
+
   return 0
 }
 
@@ -398,7 +403,7 @@ while true; do
     $PERMISSION_MODE \
     --output-format "$OUTPUT_FORMAT" \
     --model "$CUR_MODEL" \
-    --verbose 2>&1 | tee "$CUR_LOG"
+    --verbose 2>&1 | tee "$CUR_LOG" || true
 
   ITERATION=$((ITERATION + 1))
   TOTAL_ITERATION=$((TOTAL_ITERATION + 1))

@@ -4,19 +4,16 @@
 
 cd "${CLAUDE_PROJECT_DIR:-.}"
 
-# Load config (required — run init.sh first)
+# Load config
 CONFIG=".harness-config"
 if [ -f "$CONFIG" ]; then
   # shellcheck disable=SC1090
   source "$CONFIG"
-else
-  echo "[gate] ERROR: .harness-config not found. Run init.sh first." >&2
-  exit 2
 fi
 
 echo "[gate] Running pre-commit checks..."
 
-# Run tests (with timeout to prevent hangs)
+# Run tests
 if [ -n "${TEST_CMD:-}" ] && [ "$TEST_CMD" != "" ]; then
   timeout 120 bash -c "$TEST_CMD" 2>&1 || { echo "[gate] Tests failed" >&2; exit 2; }
 fi

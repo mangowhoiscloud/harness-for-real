@@ -156,6 +156,10 @@ AMBIGUITY_THRESHOLD=0.10
 
 # Test code ratio target
 TEST_CODE_RATIO_TARGET=0.70
+
+# Context Hub (chub) — fetch API docs for agents
+CHUB_AVAILABLE="${CHUB_AVAILABLE}"
+CHUB_CONTEXT_DIR=".context"
 CONFIG_EOF
 echo "[init] Created $CONFIG_FILE"
 
@@ -193,8 +197,8 @@ CLAUDE_EOF
 fi
 
 # ─── Update AGENTS.md (only if no agent-added content exists) ─────
-if [ -f "AGENTS.md" ] && grep -q "Updated by agents" AGENTS.md 2>/dev/null; then
-  # AGENTS.md has not been modified by agents yet — safe to overwrite
+if [ ! -f "AGENTS.md" ] || grep -q "Updated by agents" AGENTS.md 2>/dev/null; then
+  # AGENTS.md doesn't exist or still has placeholder — safe to overwrite
   cat > AGENTS.md << AGENTS_EOF
 # Operational Guide
 
@@ -313,10 +317,28 @@ for d in $ALL_DIRS; do
 done
 
 if [ -n "$EXISTING_DIRS" ]; then
+  # shellcheck disable=SC2086
   SKIP_MARKERS=$(grep -rn 'it\.skip\|describe\.skip\|@pytest\.mark\.skip\|@Disabled\|@Ignore' $EXISTING_DIRS 2>/dev/null | head -5)
   if [ -n "$SKIP_MARKERS" ]; then
     echo "[gate] ERROR: Skipped tests found:" >&2
     echo "$SKIP_MARKERS" >&2
+    exit 2
+  fi
+fi
+
+# Check for TODO/FIXME in code (not in tests or docs)
+SRC_ONLY="${SRC_DIRS:-src/}"
+EXISTING_SRC=""
+for d in $SRC_ONLY; do
+  [ -d "$d" ] && EXISTING_SRC="$EXISTING_SRC $d"
+done
+
+if [ -n "$EXISTING_SRC" ]; then
+  # shellcheck disable=SC2086
+  TODO_MARKERS=$(grep -rn 'TODO\|FIXME\|XXX\|HACK' $EXISTING_SRC 2>/dev/null | grep -v 'node_modules\|__pycache__\|target/' | head -5)
+  if [ -n "$TODO_MARKERS" ]; then
+    echo "[gate] ERROR: TODO/FIXME markers found in source:" >&2
+    echo "$TODO_MARKERS" >&2
     exit 2
   fi
 fi
@@ -342,12 +364,48 @@ if [ -d "specs" ] && [ -n "$(ls -A specs/ 2>/dev/null)" ]; then
 fi
 
 # ─── .gitignore ──────────────────────────────────────────────────
-GITIGNORE_ENTRIES=(".harness-logs/" "*.bak")
+GITIGNORE_ENTRIES=(".harness-logs/" "*.bak" ".context/")
 for entry in "${GITIGNORE_ENTRIES[@]}"; do
   if ! grep -qF "$entry" .gitignore 2>/dev/null; then
     echo "$entry" >> .gitignore
   fi
 done
+
+# ─── Context Hub (chub) setup ─────────────────────────────────────
+if command -v chub &>/dev/null; then
+  echo "[init] chub found: $(chub --version 2>/dev/null || echo 'installed')"
+  CHUB_AVAILABLE="true"
+elif command -v npx &>/dev/null; then
+  echo "[init] chub not installed globally, will use npx @aisuite/chub"
+  CHUB_AVAILABLE="npx"
+else
+  echo "[init] WARNING: chub (context-hub) not available. Install with: npm install -g @aisuite/chub"
+  CHUB_AVAILABLE="false"
+fi
+
+# Pre-fetch docs for detected project type
+if [ "$CHUB_AVAILABLE" != "false" ]; then
+  CHUB_CMD="chub"
+  [ "$CHUB_AVAILABLE" = "npx" ] && CHUB_CMD="npx -y @aisuite/chub"
+
+  mkdir -p .context
+
+  # Map project type → likely doc search terms
+  CHUB_TAGS=""
+  case "$PROJECT_TYPE" in
+    node)           CHUB_TAGS="node,javascript,typescript" ;;
+    python-uv|python-pip) CHUB_TAGS="python" ;;
+    rust)           CHUB_TAGS="rust" ;;
+    go)             CHUB_TAGS="go,golang" ;;
+    java-maven|java-gradle) CHUB_TAGS="java" ;;
+  esac
+
+  if [ -n "$CHUB_TAGS" ]; then
+    echo "[init] Searching context-hub for $CHUB_TAGS docs..."
+    $CHUB_CMD search --tags "$CHUB_TAGS" --json > .context/chub-registry.json 2>/dev/null || true
+    echo "[init] Saved available docs index to .context/chub-registry.json"
+  fi
+fi
 
 # ─── Summary ─────────────────────────────────────────────────────
 echo ""
@@ -358,6 +416,7 @@ echo "  Build:      $BUILD_CMD"
 echo "  Test:       $TEST_CMD"
 echo "  Lint:       $LINT_CMD"
 echo "  Typecheck:  $TYPECHECK_CMD"
+echo "  Context Hub: $CHUB_AVAILABLE"
 echo ""
 echo "Next steps:"
 echo "  1. Write specs in specs/ directory"
