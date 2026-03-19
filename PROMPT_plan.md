@@ -34,17 +34,37 @@ Total_Items: <N>
 Completed: <M>
 Test_Items: <T> (target: ≥70% of implementation items)
 
+## Dependency Graph
+<!-- The harness uses this section to identify items that can be built in parallel -->
+```
+Independent_Groups:
+  - group_1: [Item 1, Item 3, Item 5]   # no dependencies between these
+  - group_2: [Item 2, Item 4]           # depends on group_1
+  - group_3: [Item 6]                   # depends on group_2
+Build_Order: group_1 → group_2 → group_3
+```
+
 ## Item <N>: <concise title>
 - status: TODO | IN_PROGRESS | DONE | BLOCKED
 - priority: P0 | P1 | P2
+- complexity: S | M | L | XL
 - depends_on: [Item <X>, Item <Y>]
 - spec: specs/<filename>.md
 - clarity_ref: CLARITY_LOG.md#Round-<N> (if relevant)
 - description: <what to build, one paragraph>
 - acceptance: <how to verify it works — concrete, testable criteria>
 - tests: <what tests to write for this item>
-- estimated_complexity: S | M | L | XL
 ```
+
+### 3.5 Complexity Estimation Criteria
+Assign complexity based on these criteria (the harness uses this for model routing):
+
+| Complexity | Criteria | Model |
+|------------|----------|-------|
+| **S** (Small) | Single file, <50 LOC, well-defined pattern | Sonnet |
+| **M** (Medium) | 2-3 files, <200 LOC, standard patterns | Sonnet |
+| **L** (Large) | 4+ files, 200-500 LOC, cross-module logic | Opus |
+| **XL** (Extra Large) | System-wide changes, >500 LOC, novel patterns | Opus |
 
 ### 4. Planning Rules
 - P0 items MUST have no unresolved `depends_on` to TODO items
@@ -55,15 +75,17 @@ Test_Items: <T> (target: ≥70% of implementation items)
 - Infrastructure/setup items go first (P0)
 - Core business logic second (P0-P1)
 - UI/integration last (P1-P2)
+- **Maximize parallelism**: group items with no mutual dependencies together. The harness can build independent items simultaneously.
+- **Prefer S/M items**: splitting L/XL items into S/M items enables more parallelism and cheaper model routing
 
 ### 5. Persist
 ```bash
 git add IMPLEMENTATION_PLAN.md AGENTS.md
-git commit -m "plan: <N> items, <M> P0, <T> test items"
+git commit -m "plan: <N> items, <M> P0, <T> test items, <G> parallel groups"
 ```
 
 ## Exit Condition
-IMPLEMENTATION_PLAN.md exists with at least one item and all items have valid status/priority/acceptance fields. Write at the last line:
+IMPLEMENTATION_PLAN.md exists with at least one item and all items have valid status/priority/complexity/acceptance fields. Dependency Graph section is present. Write at the last line:
 ```
 PHASE_1_COMPLETE
 ```
@@ -73,3 +95,4 @@ PHASE_1_COMPLETE
 - Prefer fewer, well-scoped items over many vague ones
 - Each item's acceptance criteria should be verifiable by running a test
 - The build phase will pick items in priority order, so get priorities right
+- The Dependency Graph section is critical — the harness uses it for parallel execution
