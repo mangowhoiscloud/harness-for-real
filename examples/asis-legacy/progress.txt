@@ -94,3 +94,50 @@ Changes: Created SecurityIntegrationTest.java (6 tests) using WebApplicationCont
 Why: webAppContextSetup required (not standaloneSetup) because springSecurity() needs the full FilterChainProxy bean from WebApplicationContext to apply the security filter chain. Stub controller avoids dependency on Item 16 (EmployeeController) while still enabling realistic URL routing through security rules. Static inner TestConfig with @Import(SecurityConfig.class) + @EnableWebMvc is self-contained.
 Discovered: No new discoveries. Spring Security 4.2 + spring-security-test + @WebAppConfiguration works cleanly with this pattern.
 Difficulty: S as planned.
+
+=== Session 2026-03-19T22:50:00+09:00 ===
+Completed: Item 16 - EmployeeController
+Changes: Created EmployeeController.java in com.example.legacy.controller with @RestController @RequestMapping("/api/employees"). Six endpoints: GET / (list, page/size defaults 0/10), GET /{id}, POST / (201 + Location header via ServletUriComponentsBuilder), PUT /{id} (200 + updated employee), DELETE /{id} (204 no body), GET /search (name/department optional params + page/size). @Valid on @RequestBody for POST and PUT. Constructor injection of EmployeeService.
+Why: ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(id).toUri() is the Spring MVC idiom for generating Location headers from the current request's URL — avoids hardcoding the base URL. @Valid annotation delegates validation to GlobalExceptionHandler via MethodArgumentNotValidException. Constructor injection (not @Autowired field injection) for testability.
+Discovered: No new discoveries. All existing 82 tests continue to pass after adding the controller.
+Difficulty: S (simpler than M estimated — straightforward Spring MVC mapping with no surprises in this stack).
+
+=== Session 2026-03-19T23:00:00+09:00 ===
+Completed: Item 17 - Controller integration tests — CRUD operations
+Changes: Created EmployeeCrudIntegrationTest.java (8 tests) in src/test/java/com/example/legacy/controller/. Inner TestConfig composes @Import({TestAppConfig.class, SecurityConfig.class, WebConfig.class}) + explicit @Bean definitions for EmployeeValidator, EmployeeServiceImpl, EmployeeController, GlobalExceptionHandler. @Transactional at class level rolls back each test. @Before inserts a pre-seeded employee via EmployeeMapper directly. Tests: POST creates 201 with Location header, POST returns full body, POST duplicate email → 409, GET by id → 200, GET all → 200 with PageResult (content/totalElements/totalPages/currentPage), PUT → 200 with updated fields, DELETE → 204, GET after DELETE → 404. Total suite: 90 tests, 0 failures.
+Why: Composing TestAppConfig + SecurityConfig + WebConfig via @Import avoids @ComponentScan conflicts (which would pick up AppConfig and try to read production application.properties). Explicit @Bean definitions are more transparent and avoid component scan ordering issues. @Transactional test rollback ensures H2 DB is clean between tests without manual cleanup. Pre-seeding via EmployeeMapper (not MockMvc POST) avoids test setup going through the full HTTP/auth stack.
+Discovered: No new discoveries. Spring @Import of @Configuration classes with @EnableWebMvc works correctly in @WebAppConfiguration test contexts.
+Difficulty: M as planned; no surprises.
+
+=== Session 2026-03-19T23:00:00+09:00 ===
+Completed: Item 18 - Controller integration tests — Search and pagination
+Changes: Created EmployeeSearchPaginationIntegrationTest.java (8 tests). Seeds 3 employees (Alice/Engineering, Bob/Engineering, Carol/HR). Tests: name-only search returns 1 match, case-insensitive name search (ALICE→alice), department-only search returns 2 Engineering employees, name+department OR logic returns union of matches (3 total), no params returns 400, no-match returns empty PageResult (totalElements=0 totalPages=0), page=0&size=2 returns first 2 with totalPages=2, page=1&size=2 returns 1 remainder with currentPage=1. Total suite: 98 tests, 0 failures.
+Why: Used same TestConfig pattern as EmployeeCrudIntegrationTest (composing TestAppConfig + SecurityConfig + WebConfig + explicit @Bean declarations). @Transactional on class ensures H2 rollback per test. Direct mapper insert in setUp avoids auth stack for seed data. OR-logic test seeds name in HR, dept as Engineering so the union is all 3 employees — verifies the mapper <choose> OR branch.
+Discovered: No new discoveries. Existing infrastructure composed cleanly.
+Difficulty: M as planned; no surprises.
+
+=== Session 2026-03-19T23:03:00+09:00 ===
+Completed: Item 19 - Controller integration tests — Authentication and error handling
+Changes: Created EmployeeAuthErrorIntegrationTest.java (8 tests). Tests: unauthenticated GET→401 JSON (status/message/timestamp), user role POST→403 JSON, PUT non-existent id→404 JSON, DELETE non-existent id→404 JSON, POST blank name→400 with fieldErrors[0].field='name' and fieldErrors[0].message, POST invalid email→400 with fieldErrors[0].field='email', POST negative salary→400 with fieldErrors[0].field='salary', POST multiple violations (blank name+bad email+negative salary)→400 with fieldErrors.length≥3 each having field and message. Total suite: 106 tests, 0 failures.
+Why: Used same TestConfig composition pattern as Items 17/18 (TestAppConfig+SecurityConfig+WebConfig+explicit beans). Single-violation tests assert exact fieldErrors size=1 and fieldErrors[0].field value so regressions in exception handling are caught precisely. Multiple-violation test uses greaterThanOrEqualTo(3) instead of exact count because validator ordering is not guaranteed across Hibernate Validator versions. All 19 items are now DONE.
+Discovered: No new discoveries. All infrastructure composed cleanly as in previous sessions.
+Difficulty: M as planned; no surprises. Item 19 is the final item — all 19/19 items DONE.
+
+=== Session 2026-03-19T23:07:00+09:00 ===
+Status: ALL ITEMS COMPLETE — BUILD PHASE FINISHED
+All 19/19 items in IMPLEMENTATION_PLAN.md are DONE.
+Test suite: 106 tests, 0 failures, 0 skipped. BUILD SUCCESS.
+No remaining TODO items to implement.
+The build phase should transition to the next phase (e.g., review/deploy).
+PHASE_2_COMPLETE
+
+=== Session 2026-03-19T23:08:00+09:00 ===
+---
+HARNESS_COMPLETE
+Verification Report:
+  Validator: ALL PASS (30 criteria checked)
+  Coordinator: ALL PASS (14 modules checked)
+  Packer: ALL PASS (6 checks)
+  Learnings_Applied: 4 of 4
+Timestamp: 2026-03-19T14:08:00Z
+---
