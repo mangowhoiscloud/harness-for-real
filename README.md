@@ -224,7 +224,11 @@ chub annotate stripe/api "note"   # 학습 내용 기록 (세션 간 유지)
 
 ### Word Counter CLI (Python)
 
-2개 스펙 파일로 단어 빈도 분석기를 자율 생성하는 가벼운 데모:
+2개 스펙 파일로 단어 빈도 분석기를 자율 생성하는 가벼운 데모.
+
+**입력 (사람이 제공한 파일):**
+- `specs/word-counter-cli.md` — CLI 인터페이스 스펙
+- `specs/word-definition.md` — 단어 정의 및 토큰화 규칙
 
 ```bash
 cd examples/word-counter
@@ -250,7 +254,12 @@ group_1 (병렬):  Tokenizer ──┐
 
 ### AS-IS Spring Boot 3 (Java 21)
 
-Java 21 + Spring Boot 3.3.7 + Spring Security 6.x + MyBatis 3.0.4 레거시 프로젝트. 마이그레이션 툴의 입력 대상:
+Java 21 + Spring Boot 3.3.7 + Spring Security 6.x + MyBatis 3.0.4 레거시 프로젝트. 마이그레이션 툴의 입력 대상.
+
+**입력 (사람이 제공한 파일):**
+- `specs/employee-crud-api.md` — Employee CRUD REST API 스펙 (Spring Boot 3 버전)
+- `pom.xml` — Maven 프로젝트 구조 + 의존성 정의
+- `CLAUDE.md` — Java 21 / Spring Boot 3 스택 전용 룰
 
 ```bash
 cd examples/asis-boot3
@@ -277,7 +286,12 @@ bash run-demo.sh
 
 ### AS-IS Spring Framework 4 (Java 1.8)
 
-Java 1.8 + Spring Framework 4.3.4 + Spring Security 4.2.4 + MyBatis 3.2.2 레거시 프로젝트. 마이그레이션 툴의 입력 대상:
+Java 1.8 + Spring Framework 4.3.4 + Spring Security 4.2.4 + MyBatis 3.2.2 레거시 프로젝트. 마이그레이션 툴의 입력 대상.
+
+**입력 (사람이 제공한 파일):**
+- `specs/employee-crud-api.md` — Employee CRUD REST API 스펙 (Spring 4 Legacy 버전)
+- `pom.xml` — Maven 프로젝트 구조 + 의존성 정의
+- `CLAUDE.md` — Java 1.8 / Spring 4 스택 전용 룰
 
 ```bash
 cd examples/asis-legacy
