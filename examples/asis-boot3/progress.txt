@@ -77,3 +77,10 @@ Changes: Created EmployeeIntegrationTest.java with 12 tests using @SpringBootTes
 Why: @Transactional on the test class ensures each test rolls back, preserving seed data isolation. httpBasic() tests the actual HTTP Basic auth flow end-to-end rather than bypassing with @WithMockUser. H2 with MODE=PostgreSQL in test profile ensures SQL compatibility.
 Discovered: No new discoveries. @SpringBootTest context reuse and @Transactional rollback worked as expected.
 Difficulty: L — accurate estimate. More test methods than typical S/M items but each was straightforward given the existing code.
+
+=== Session 2026-03-19T22:29:00+09:00 ===
+Completed: Item 13 - Search endpoint tests
+Changes: Created EmployeeSearchTest.java with 8 dedicated search tests: byNameOnly, byDepartmentOnly, byNameAndDepartment (AND match), byNameAndDepartment (AND no match), partialNameMatch case-insensitive, noMatchReturnsEmptyPage, paginatedResults (multi-page with 3 created employees), partialDepartmentMatch. All 68 tests pass (8 new + 60 existing).
+Why: Dedicated class keeps search coverage organized and separate from the general CRUD integration tests. @Transactional ensures test-created employees for pagination tests rollback cleanly. partialDepartmentMatch tests the LIKE '%neer%' → Engineering case, confirming the LOWER(CONCAT('%'...)) mapper implementation. Pagination test creates 3 employees in unique "SearchDept" department to avoid seed data interference.
+Discovered: No new discoveries. @SpringBootTest context is reused across EmployeeSearchTest and EmployeeIntegrationTest — startup time is negligible for the second class.
+Difficulty: S — accurate estimate.

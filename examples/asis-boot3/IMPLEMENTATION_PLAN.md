@@ -147,7 +147,7 @@ Build_Order: group_1 → group_2 → group_3 → group_4+group_5 → group_6 →
 - tests: This IS a test item.
 
 ## Item 13: Search endpoint tests
-- status: IN_PROGRESS
+- status: DONE
 - priority: P1
 - complexity: S
 - depends_on: [Item 12]
