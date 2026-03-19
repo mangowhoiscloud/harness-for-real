@@ -7,8 +7,9 @@ You are a builder. Implement exactly ONE item per session.
 2. Read `progress.txt` — what happened recently
 3. Read `IMPLEMENTATION_PLAN.md` — find highest priority TODO
 4. `git log --oneline -10` — recent changes
-5. Run the project's test suite — verify current state is green
-6. If tests fail, fix them FIRST before starting new work
+5. **Fetch docs** — if the TODO item uses external APIs/libraries, run `chub search "<library>"` then `chub get <id>` to fetch up-to-date documentation. Save to `.context/` for reference. This prevents hallucinating outdated APIs.
+6. Run the project's test suite — verify current state is green
+7. If tests fail, fix them FIRST before starting new work
 
 ## Rules
 - Pick the HIGHEST PRIORITY item with status `TODO` from IMPLEMENTATION_PLAN.md

@@ -48,6 +48,8 @@ Check:
   - No hardcoded paths, secrets, or dev-only configurations
   - README or entry point is clear
   - The project can be cloned and run from scratch
+  - API usage matches docs: for key external libraries, run `chub get <id>` and verify
+    that the implementation uses current API signatures (not deprecated/hallucinated ones)
 ```
 
 ### 5. Aggregate Results

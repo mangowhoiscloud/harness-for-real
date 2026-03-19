@@ -16,6 +16,7 @@ Read the following with parallel subagents:
 - `CLARITY_LOG.md` — resolved ambiguities and decisions from Socratic phase
 - Existing source code in `src/*` (if any) — what's already built
 - `src/lib/*` — shared utilities and components
+- **External API docs** — if specs reference external libraries/APIs, run `chub search "<library>"` then `chub get <id>` to fetch up-to-date documentation. Save fetched docs to `.context/` so the build phase can reference them. This prevents planning around outdated or hallucinated APIs.
 
 ### 2. Gap Analysis
 Use an Opus subagent with ultrathink to compare specs + clarity decisions against existing code:

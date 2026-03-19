@@ -17,6 +17,8 @@ Read all files in `specs/` with parallel subagents. Each subagent reads one spec
 - What depends on other specs
 - What edge cases are unaddressed
 
+If specs reference external libraries or APIs, run `chub search "<library>"` to check if up-to-date docs are available. Fetch them with `chub get <id>` and save to `.context/`. Use these docs to validate whether spec assumptions about API behavior are correct — flag discrepancies as ambiguities.
+
 ### 2. Read Previous Progress
 If CLARITY_LOG.md exists, read it to understand what has already been clarified. Do not re-ask resolved questions.
 
