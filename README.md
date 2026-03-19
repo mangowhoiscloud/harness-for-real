@@ -266,6 +266,15 @@ bash run-demo.sh
 | DB | PostgreSQL (테스트: H2) |
 | 테스트 | JUnit 5 + @SpringBootTest |
 
+**테스트 실행 결과** (2026-03-19):
+```
+[INFO] Tests run: 73, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Total time:  7.071 s
+```
+- 14개 구현 항목 완료 (Controller, Service, Mapper, Config, DTO, Exception 등)
+- Employee CRUD REST API 전체 엔드포인트 + 페이지네이션 + 검색 + 인증/인가
+
 ### AS-IS Spring Framework 4 (Java 1.8)
 
 Java 1.8 + Spring Framework 4.3.4 + Spring Security 4.2.4 + MyBatis 3.2.2 레거시 프로젝트. 마이그레이션 툴의 입력 대상:
@@ -283,6 +292,15 @@ bash run-demo.sh
 | ORM | MyBatis 3.2.2 (XML mapper only) |
 | DB | PostgreSQL (테스트: H2) |
 | 테스트 | JUnit 4 + Mockito |
+
+**테스트 실행 결과** (2026-03-19):
+```
+[INFO] Tests run: 106, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Total time:  2.432 s
+```
+- 19개 구현 항목 완료 (Controller, Service, Mapper, Config, DTO, Validation, ExceptionHandler 등)
+- Employee CRUD REST API 전체 엔드포인트 + 페이지네이션 + 검색 + 인증/인가
 
 두 프로젝트 모두 동일한 Employee CRUD REST API 스펙을 구현하므로 스택 간 마이그레이션 비교가 가능합니다.
 
