@@ -158,7 +158,7 @@ Build_Order: group_1 → group_2 → group_3 → group_4+group_5 → group_6 →
 - tests: This IS a test item.
 
 ## Item 14: Error handling tests
-- status: TODO
+- status: DONE
 - priority: P1
 - complexity: S
 - depends_on: [Item 12]
