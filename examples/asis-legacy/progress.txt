@@ -87,7 +87,10 @@ Changes: Created EmployeeValidatorTest.java with 5 Mockito-based unit tests cove
 Why: Pure unit test using MockitoJUnitRunner — no Spring context needed. Mockito mock of EmployeeMapper injected directly via constructor. @Test(expected=...) used for exception assertions (JUnit 4 style). verify() confirms findByEmail is called in success paths.
 Discovered: No new discoveries.
 Difficulty: S as planned.
-Changes: Created EmployeeMapperTest.java (20 tests) covering all 9 mapper methods: insert (generated id), findById (positive/negative), findAll (offset+limit pagination, empty result), update (all fields modified), delete (removes record, non-existent id no-op), countAll (zero, positive), searchByNameOrDepartment (name-only, department-only, both OR, no match, pagination), countBySearch (name-only, department-only, both OR), findByEmail (positive/negative). Also fixed pom.xml maven-surefire-plugin to add --add-opens flags (java.base/java.lang, java.lang.reflect, java.io) required for Spring 4.3.x CGLIB to work on Java 9+.
-Why: Spring 4.3.x bundles CGLIB 3.2.5/ASM 5.x which calls ClassLoader.defineClass() (protected) via reflection when creating @Configuration proxy subclasses. Java 9+ module system blocks this by default. --add-opens allows the reflection access. Without this, every integration test using @ContextConfiguration with a @Configuration class would fail with ExceptionInInitializerError: null. This is a one-time fix that unblocks all future integration tests (Items 13, 14, 17, 18, 19).
-Discovered: Spring 4.3.x CGLIB + Java 9+ incompatibility requires --add-opens in surefire argLine. The error manifests as ExceptionInInitializerError with null cause, which makes it hard to diagnose without understanding CGLIB internals.
-Difficulty: M actual vs M planned (20 min diagnosing CGLIB/Java module issue, 10 min writing tests).
+
+=== Session 2026-03-19T22:48:00+09:00 ===
+Completed: Item 14 - Security integration tests
+Changes: Created SecurityIntegrationTest.java (6 tests) using WebApplicationContext + SecurityMockMvcConfigurers.springSecurity(). Test config imports SecurityConfig and registers a stub @RestController at /api/employees. Tests: unauthenticated GET→401 JSON, unauthenticated POST→401 JSON, USER GET→200 (allowed), USER POST→403 JSON, ADMIN GET→200 (allowed), ADMIN POST→200 (allowed).
+Why: webAppContextSetup required (not standaloneSetup) because springSecurity() needs the full FilterChainProxy bean from WebApplicationContext to apply the security filter chain. Stub controller avoids dependency on Item 16 (EmployeeController) while still enabling realistic URL routing through security rules. Static inner TestConfig with @Import(SecurityConfig.class) + @EnableWebMvc is self-contained.
+Discovered: No new discoveries. Spring Security 4.2 + spring-security-test + @WebAppConfiguration works cleanly with this pattern.
+Difficulty: S as planned.
