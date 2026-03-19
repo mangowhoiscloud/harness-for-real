@@ -138,7 +138,7 @@ Build_Order: group_1 → group_2 → group_3 → group_4 → group_5
 - tests: This IS a test item
 
 ## Item 12: EmployeeMapper integration tests
-- status: IN_PROGRESS
+- status: DONE
 - priority: P0
 - complexity: M
 - depends_on: [Item 6, Item 8]

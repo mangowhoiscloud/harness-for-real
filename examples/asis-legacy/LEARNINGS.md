@@ -14,3 +14,8 @@
 - Context: EmployeeRequest DTO needed @NotBlank and @Email annotations
 - Discovery: `javax.validation` 1.1.0.Final does not include `@NotBlank` or `@Email` (those were added in Bean Validation 2.0). Hibernate Validator 5.x provides them at `org.hibernate.validator.constraints.NotBlank` and `org.hibernate.validator.constraints.Email`.
 - Rule: For this project, use `org.hibernate.validator.constraints.NotBlank` and `org.hibernate.validator.constraints.Email`. Standard `javax.validation.constraints` annotations (@NotNull, @Size, @DecimalMin, etc.) work as normal.
+
+### Learning: Spring 4.3.x CGLIB fails on Java 17+ without --add-opens
+- Context: First integration test using @ContextConfiguration(classes = TestAppConfig.class) on Java 25
+- Discovery: Spring 4.3.x bundles CGLIB 3.2.5/ASM 5.x which uses reflection to call `ClassLoader.defineClass()` (a protected method) when generating @Configuration proxy subclasses. Java 9+ module system blocks this by default, causing `ExceptionInInitializerError: null` in `org.springframework.cglib.proxy.Enhancer`.
+- Rule: Add `--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED` to maven-surefire-plugin `<argLine>` in pom.xml. This is required for ANY test that loads a Spring application context (via @ContextConfiguration) with Spring 4.x on Java 9+.
