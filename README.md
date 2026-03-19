@@ -248,14 +248,43 @@ group_1 (병렬):  Tokenizer ──┐
                  Formatter ───┘
 ```
 
-### REODE 마이그레이션 대상 (Java)
+### AS-IS Spring Boot 3 (Java 21)
 
-Java 1.8 + Spring Framework 4.3.4 레거시 코드베이스를 자율 생성하는 데모. 순환참조, XML 설정, 필드 인젝션 등 의도적인 안티패턴이 포함되어 마이그레이션 도구의 테스트 대상으로 활용 가능:
+Java 21 + Spring Boot 3.3.7 + Spring Security 6.x + MyBatis 3.0.4 레거시 프로젝트. 마이그레이션 툴의 입력 대상:
 
 ```bash
-cd examples/reode-migration-target
+cd examples/asis-boot3
 bash run-demo.sh
 ```
+
+| 항목 | 상세 |
+|------|------|
+| Java | 21 (records, text blocks, virtual threads) |
+| Framework | Spring Boot 3.3.7 (auto-config) |
+| Security | Spring Security 6.x (HTTP Basic) |
+| ORM | MyBatis Spring Boot Starter 3.0.4 |
+| DB | PostgreSQL (테스트: H2) |
+| 테스트 | JUnit 5 + @SpringBootTest |
+
+### AS-IS Spring Framework 4 (Java 1.8)
+
+Java 1.8 + Spring Framework 4.3.4 + Spring Security 4.2.4 + MyBatis 3.2.2 레거시 프로젝트. 마이그레이션 툴의 입력 대상:
+
+```bash
+cd examples/asis-legacy
+bash run-demo.sh
+```
+
+| 항목 | 상세 |
+|------|------|
+| Java | 1.8 (explicit Java config, no Boot) |
+| Framework | Spring Framework 4.3.4.RELEASE |
+| Security | Spring Security 4.2.4.RELEASE |
+| ORM | MyBatis 3.2.2 (XML mapper only) |
+| DB | PostgreSQL (테스트: H2) |
+| 테스트 | JUnit 4 + Mockito |
+
+두 프로젝트 모두 동일한 Employee CRUD REST API 스펙을 구현하므로 스택 간 마이그레이션 비교가 가능합니다.
 
 ---
 
@@ -342,7 +371,7 @@ harness-for-real/
 │   ├── parallel-build.sh   # git worktree 기반 병렬 빌드 오케스트레이터
 │   └── test-ratio.sh       # 테스트 코드 비율 측정
 ├── specs/                  # 스펙 파일
-├── examples/               # word-counter, reode-migration-target
+├── examples/               # word-counter, asis-boot3, asis-legacy
 ├── docs/blog/              # 하네스 엔지니어링 블로그 포스트
 └── RESEARCH.md             # 설계 근거 전체 리서치
 ```
