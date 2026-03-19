@@ -382,7 +382,7 @@ harness-for-real/
 
 ## 리서치
 
-설계 근거가 되는 전체 리서치는 [RESEARCH.md](./RESEARCH.md)에서 확인할 수 있습니다. 하네스 엔지니어링의 진화와 글로벌 트렌드를 다룬 블로그 포스트는 [docs/blog/](./docs/blog/harness-engineering-era.md)에 있습니다.
+설계 근거가 되는 전체 리서치는 [RESEARCH.md](./RESEARCH.md)에서 확인할 수 있습니다.
 
 ---
 
