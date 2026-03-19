@@ -366,7 +366,7 @@ harness-for-real/
 
 ## 기존 하네스와의 차이점
 
-| | [ghuntley 플레이북](https://github.com/ghuntley/how-to-ralph-wiggum) | [ralph-claude-code](https://github.com/frankbria/ralph-claude-code) | [claude-code-harness](https://github.com/Chachamaru127/claude-code-harness) | **이 하네스** |
+| | [ghuntley 플레이북](https://github.com/ghuntley/how-to-ralph-wiggum) | [ralph-claude-code](https://github.com/frankbria/ralph-claude-code) | [claude-code-harness](https://github.com/Chachamaru127/claude-code-harness) | **harness-for-real** |
 |---|---|---|---|---|
 | 소크라틱 사전 단계 | 수동 스펙 | 없음 | 없음 | 자동화 |
 | 단계 전환 | 수동 | 종료 감지만 | Plan→Work→Review | 4-Phase FSM 자동 |
