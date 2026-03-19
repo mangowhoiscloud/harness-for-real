@@ -338,10 +338,14 @@ validate_phase() {
       fi
       ;;
     plan)
-      [ ! -f "CLARITY_LOG.md" ] && echo -e "${YELLOW}WARNING: No CLARITY_LOG.md found.${NC}"
+      if [ ! -f "CLARITY_LOG.md" ]; then
+        echo -e "${YELLOW}WARNING: No CLARITY_LOG.md found.${NC}"
+      fi
       ;;
     build)
-      [ ! -f "IMPLEMENTATION_PLAN.md" ] && echo -e "${YELLOW}WARNING: No IMPLEMENTATION_PLAN.md found.${NC}"
+      if [ ! -f "IMPLEMENTATION_PLAN.md" ]; then
+        echo -e "${YELLOW}WARNING: No IMPLEMENTATION_PLAN.md found.${NC}"
+      fi
       ;;
   esac
 }
