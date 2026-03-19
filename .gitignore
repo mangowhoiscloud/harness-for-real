@@ -7,4 +7,3 @@ __pycache__/
 target/
 dist/
 build/
-examples/asis-legacy/

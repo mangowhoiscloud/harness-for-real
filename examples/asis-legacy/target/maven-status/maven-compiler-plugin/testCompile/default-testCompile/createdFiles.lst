@@ -1,0 +1,11 @@
+com/example/legacy/validation/EmployeeValidatorTest.class
+com/example/legacy/dto/ErrorResponseTest.class
+com/example/legacy/model/EmployeeSerializationTest.class
+com/example/legacy/controller/GlobalExceptionHandlerTest$TestController.class
+com/example/legacy/service/EmployeeServiceImplTest.class
+com/example/legacy/support/BaseIntegrationTest.class
+com/example/legacy/mapper/EmployeeMapperTest.class
+com/example/legacy/controller/GlobalExceptionHandlerTest.class
+com/example/legacy/dto/EmployeeRequestValidationTest.class
+com/example/legacy/config/TestAppConfig.class
+com/example/legacy/service/EmployeeServiceImplTest$1.class

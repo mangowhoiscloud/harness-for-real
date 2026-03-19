@@ -1,0 +1,81 @@
+{
+  "results": [
+    {
+      "id": "apache-airflow/providers-jdbc",
+      "name": "providers-jdbc",
+      "description": "Apache Airflow JDBC provider for Airflow connections, SQL tasks, and JdbcHook-based DAG workflows",
+      "source": "maintainer",
+      "tags": [
+        "airflow",
+        "jdbc",
+        "sql",
+        "java",
+        "python",
+        "dag",
+        "database"
+      ],
+      "languages": [
+        {
+          "language": "python",
+          "versions": [
+            {
+              "version": "5.4.0",
+              "path": "apache-airflow/docs/providers-jdbc/python",
+              "files": [
+                "DOC.md"
+              ],
+              "size": 9530,
+              "lastUpdated": "2026-03-13"
+            }
+          ],
+          "recommendedVersion": "5.4.0"
+        }
+      ],
+      "_source": "default",
+      "_sourceObj": {
+        "name": "default",
+        "url": "https://cdn.aichub.org/v1"
+      },
+      "_type": "doc"
+    },
+    {
+      "id": "tabula-py/package",
+      "name": "package",
+      "description": "tabula-py Python package for extracting tabular data from PDFs into pandas DataFrames or CSV/TSV/JSON outputs",
+      "source": "maintainer",
+      "tags": [
+        "tabula-py",
+        "pdf",
+        "tables",
+        "pandas",
+        "java",
+        "csv",
+        "json"
+      ],
+      "languages": [
+        {
+          "language": "python",
+          "versions": [
+            {
+              "version": "2.10.0",
+              "path": "tabula-py/docs/package/python",
+              "files": [
+                "DOC.md"
+              ],
+              "size": 7333,
+              "lastUpdated": "2026-03-12"
+            }
+          ],
+          "recommendedVersion": "2.10.0"
+        }
+      ],
+      "_source": "default",
+      "_sourceObj": {
+        "name": "default",
+        "url": "https://cdn.aichub.org/v1"
+      },
+      "_type": "doc"
+    }
+  ],
+  "total": 2
+}
